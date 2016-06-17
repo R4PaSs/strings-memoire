@@ -1,0 +1,85 @@
+\begin{conclusion}
+
+Dans cette étude, nous traitons des implémentations des chaînes de caractères dans les langages de programmation et des problématiques de performance qui en découlent.
+Nous avons identifié les cas dégénératifs d'utilisation des chaines plates:
+
+\begin{enumerate}
+	\item concaténation: la ré-allocation et la copie sur de grandes chaînes;
+	\item accès indexé: dû aux codages à longueur variable, l'opération est en O(n);
+	\item modification: pour les mêmes raisons que l'accès indexé, le déplacement jusqu'à la position à modifier, et
+		la modification, qui peut entraîner le déplacement d'une partie de la chaîne.
+\end{enumerate}
+
+Pour chaque problème des chaînes plates, les cordes sont une réponse appropriée.
+Cependant, elles aussi exposent des cas dégénératifs:
+
+\begin{enumerate}
+	\item sous-chaînage: le parcours et la création des nouveaux noeuds de la corde peuvent empêcher à l'opération de s'effectuer en un temps raisonnable;
+	\item itération: le parcours de la corde ralentit l'opération.
+\end{enumerate}
+
+Nous avons décidé de mélanger les deux approches dans une solution originale afin de profiter des avantages des
+deux structures, et de mitiger leurs inconvénients.
+Nous avons implémenté cette solution dans le langage Nit, et la transition d'une structure à l'autre s'effectue
+de façon transparente pour l'utilisateur lors d'une concaténation via un système de seuil de conversion.
+
+La question du codage des caractères est également traitée lors de cette étude.
+En 2016, tous les langages de programmation se doivent de supporter au moins un des codages prévus et spécifiés
+par Unicode, que ce soit par défaut (Nit, Go, Python, Ruby, etc.) ou par le biais de bibliothèques (C, C++, etc.).
+Ces choix ont cependant des conséquences en termes de performance ou d'utilisation mémoire.
+
+Nous avons choisi en Nit d'utiliser UTF-8 par défaut, ce choix a été motivé par les facteurs de popularité
+du codage et de compatiblitité avec les chaînes C.
+Ces deux avantages nous garantissent de pouvoir continuer à utiliser des fonctions de manipulations de chaînes
+de caractères implémentées en C pour des raisons de performance, mais également de limiter la probabilité
+d'avoir un travail de conversion à effectuer lors de la lecture de texte.
+UTF-8 est également le codage Unicode le plus économe en termes de mémoire\footnote{À l'exception du rare cas
+de texte contenant uniquement des caractères asiatiques, où UTF-16 est plus économe.}, ce qui garantit
+une consommation raisonnable.
+
+Nous apportons un modèle de représentation original de chaînes de caractères, efficace et simple à utiliser.
+Il garantit:
+\begin{enumerate}
+	\item La non-dégénérescence des opérations effectuées sur les chaînes de caractères
+	\item Une meilleure gestion de la mémoire en limitant l'espace contigu nécessaire pour stocker une chaîne entière
+	\item De meilleures performances de ramasse-miettes en évitant d'allouer des blocs de
+		texte trop grands et en évitant de copier ou déplacer des données d'un endroit à l'autre de
+		la mémoire lors de manipulations de chaînes de caractères.
+\end{enumerate}
+
+La solution que nous présentons est viable, comme le montrent les résultats que nous présentons dans le
+chapitre~\ref{perf_chap} sur la performance, aussi bien sur de micro-benchmarks que sur des programmes réels.
+En effet, cette solution limite les effets des cas dégénératifs dans tous les cas.
+Cependant, son impact sur des programmes réels est variable.
+Notons que si une accélération n'est pas toujours constatée, la performance reste égale ou tout du moins
+proche par rapport à une approche utilisant uniquement des chaînes plates.
+Elle accuse par exemple un ralentissement moyen de 8\% sur le cas d'analyse syntaxique JSON, un cas
+défavorable à l'utilisation des cordes.
+
+Dans le futur, la bibliothèque continuera à évoluer, de façon à améliorer ses performances
+dans les cas présentés.
+Nous continuons activement la recherche de meilleures heuristiques pour la production de cordes
+dans des cas d'utilisation courants.
+
+En termes de codage, il reste à explorer la possibilité de transiter vers une API orientée graphème,
+à l'instar des implémentations de Swift et Perl6.
+Cette modification aurait pour conséquence d'alourdir la représentation de caractère, n'étant plus
+primitive.
+
+Il est cependant possible d'imaginer une solution transformant \texttt{Char} en une structure abstraite
+et en implémentant les différents cas: graphème simple (point de code), graphème étendu, etc.
+À l'implémentation de cette solution, il faudra évaluer l'impact sur la performance, le passage
+d'un type primitif à un type abstrait empêchant les optimisations à la génération du code (inlining
+impossible, nécessité d'utiliser des appels polymorphes pour les fonctions de \texttt{Char}, etc.).
+
+Le développement et l'optimisation de la version mutable de notre solution restent également à repenser
+afin de réduire les problèmes inhérents aux codages à longueur variable dans les cas de modification et d'avoir
+des performances proches des \texttt{buffers} actuels dans le cas de la concaténation.
+
+Il reste encore également des possibilités d'évolution sur l'architecture elle-même.
+Il est possible pour le sous-chainage par exemple, de proposer une implémentation adaptative, ré-allouant
+et copiant les données sous un seuil, et partageant les sous-chaînes dans d'autres cas.
+
+Une autre possibilité pour améliorer les performances est de se baser sur des techniques d'analyse de code
+pour changer les représentations à la compilation ou ajouter des optimisations dans des cas limites.
+\end{conclusion}

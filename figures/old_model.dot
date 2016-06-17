@@ -1,0 +1,86 @@
+digraph G {
+	fontname = "Bitstream Vera Sans"
+				fontsize = 8
+				node [
+					fontname = "Bitstream Vera Sans"
+					fontsize = 8
+					shape = "record"
+				]
+
+				edge [
+					fontname = "Bitstream Vera Sans"
+					fontsize = 8
+				]
+
+NativeString [
+ label = "{NativeString|}"
+];
+
+Collection [
+ label = "{Collection[Char]|}"
+];
+
+SequenceRead [
+ label = "{SequenceRead[Char]|}"
+];
+
+AbstractString [
+ label = "{AbstractString|}"
+];
+
+String [
+ label = "{String|}"
+];
+
+Sequence [
+ label = "{Sequence[Char]|}"
+];
+
+Buffer [
+ label = "{Buffer|}"
+];
+
+Object [
+ label = "{Object|}"
+];
+
+ObjectComment [
+ label = "Racine de la hiérarchie Nit"
+ style = "dashed"
+];
+
+CollComment [
+ label = "Racine de la hiérarchie des collections"
+ style = "dashed"
+];
+
+SeqReadComment [
+ label = "Collections ordonnées d'éléments immutables"
+ style = "dashed"
+];
+
+SeqComment [
+ label = "Collections ordonnées d'éléments mutables"
+ style = "dashed"
+];
+
+AbsStrComment [
+ label = "Factorisation du code entre String et Buffer"
+ style = "dashed"
+];
+
+AbstractString -> Buffer [dir=back arrowtail=empty];
+AbstractString -> String [dir=back arrowtail=empty];
+AbstractString -> NativeString [dir=back arrowtail=diamond];
+AbstractString -> AbsStrComment [style=dashed arrowhead=none];
+Sequence -> Buffer [dir=back arrowtail=empty];
+Sequence -> SeqComment [style=dashed arrowhead=none];
+SequenceRead -> Sequence [dir=back arrowtail=empty];
+SequenceRead -> AbstractString [dir=back arrowtail=empty];
+SequenceRead -> SeqReadComment [style=dashed arrowhead=none];
+Collection -> SequenceRead [dir=back arrowtail=empty];
+Collection -> CollComment [style=dashed arrowhead=none];
+Object -> Collection [dir=back arrowtail=empty];
+Object -> NativeString [dir=back arrowtail=empty];
+Object -> ObjectComment [style=dashed arrowhead=none];
+}

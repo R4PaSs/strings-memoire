@@ -1,0 +1,20 @@
+digraph G{
+
+	node [shape = record, fontname = "Courier"];
+	edge [tailclip=false];
+
+
+	node0 [ label = "H|e|l" ];
+	node1 [ label = "l|o| "];
+	node2 [ label = "W|o|r" ];
+	node3 [ label = "l|d|!"];
+	trope [label="{ Rope | {<left>|<right>} }"];
+	lrope [label="{ Rope | {<left>|<right>} }"];
+	rrope [label="{ Rope | {<left>|<right>} }"];
+	trope:left:c -> lrope [arrowtail=dot, dir=both];
+	trope:right:c -> rrope [arrowtail=dot, dir=both];
+	lrope:left:c -> node0 [arrowtail=dot, dir=both];
+	lrope:right:c -> node1 [arrowtail=dot, dir=both];
+	rrope:left:c -> node2 [arrowtail=dot, dir=both];
+	rrope:right:c -> node3 [arrowtail=dot, dir=both];
+}

@@ -1,0 +1,190 @@
+\begin{introduction}
+
+La chaîne de caractères est un concept ancien, plus vieux que l'informatique elle-même.
+Il s'agit de l'un des plus fondamentaux
+de ce c\oe{}ur de métier, utilisé quotidiennement par des
+millions de programmeurs.
+Que ce soit pour des débutants s'essayant à leur premier \og Hello World \fg{}
+qu'aux développeurs de compilateurs générant des milliers de lignes de code
+en passant par des administrateurs tapant des commandes texte,
+les chaînes de caractères sont partout.
+
+Malgré leur importance, elles ont peu évolué depuis leur apparition.
+Le plus souvent dans les langages impératifs et à objets, la représentation de
+choix est un tableau de caractères.
+La raison principale est l'efficacité de la solution.
+En effet, les tableaux offrent une complexité temporelle constante pour l'accès
+à un élément, les seules opérations à effectuer sont une addition pour calculer l'adresse
+à charger et la lecture de la donnée.
+Il existe cependant des différences fondamentales dans la façon dont les langages gèrent ledit
+tableau: mutable ou immutable, codage utilisé en interne, micro-optimisations, etc.
+
+Si cette approche est efficace pour l'accès indexé et l'itération, elle n'est pas exempte de défauts.
+Nécéssitant de l'espace contigu pour fonctionner, elle dégénère lorsque
+l'espace requis pour contenir les données de la chaîne atteint une grande taille.
+Cette propriété rend des opérations lentes: la concaténation en est un exemple.
+Une insertion à un endroit arbitraire de la chaîne impose de déplacer le contenu de la chaîne
+pour permettre ladite insertion.
+Selon la capacité disponible, cette opération peut entraîner une ré-allocation et copie du
+contenu de la chaîne à un autre endroit de la mémoire, une opération effectuée en temps
+linéaire.
+
+Cette étude présente les chaînes de caractères dans le cadre de la bibliothèque
+standard de Nit, un langage de programmation à objets.
+Nous identifions les opérations fondamentales des chaînes de caractères, à partir
+desquelles les autres opérations peuvent être dérivées.
+Pour cette raison, ces opérations se doivent d'être aussi efficaces que possible.
+Nous identifions également les forces et faiblesses des différentes structures
+et proposons un moyen de les mitiger via un modèle original, que nous
+avons implémenté en Nit.
+
+\section{Contexte de l'étude}
+
+Nit est un langage de programmation à objets, statiquement typé.
+Il est une évolution de PRM, anciennement
+développé au LIRMM, à Montpellier, France. Il s'agit d'un langage
+destiné à l'expérimentation sur les langages à objets et les techniques
+de compilation desdits langages.
+Le langage, en tant que tel, est conçu pour concilier
+l'expressivité et la rapidité de développement des langages de scripts avec
+la performance et la sûreté des langages statiquement typés compilés.
+Il supporte des fonctionnalités telles que les types nullables \cite{gelinas2009prevention},
+la spécialisation multiple, les types virtuels, ainsi qu'une nouveauté
+: le raffinement de classes \cite{privat2005raffinement}.
+Le langage est également à vocation académique, le fait qu'il soit
+nouveau et développé dans un cadre universitaire donne plus de
+libertés pour tester et comparer de nouvelles approches.
+
+Au début de cette étude, les chaînes de caractères étaient fournies dans
+la bibliothèque standard de Nit sous forme de tableaux de caractères immutables.
+Il existait également une forme mutable pour les cas de concaténations et
+modifications efficaces.
+Il n'existait pas de notion de codage et les chaînes étaient considérées comme
+des blocs d'octets.
+
+L'objectif de cette étude est de moderniser et d'améliorer la performance des chaînes
+de caractères en gardant une API
+\footnote{Application Programming Interface: Interface de programmation, ensemble de fonctions et services exposés aux utilisateurs d'un projet ou d'une bibliothèque}
+aussi simple que possible.
+Nous nous sommes focalisés majoritairement sur deux points: codage et structures de données.
+Nous proposons une nouvelle API de manipulation des chaînes de
+caractères au langage, basée sur une conjonction des
+cordes et des chaînes plates.
+Nous introduisons cette solution dans le chapitre \ref{solution_chap}.
+L'ensemble des composants exposés de cette
+API sont abstraits, afin de permettre le changement entre
+les différentes représentations de façon automatique et transparente pour
+l'utilisateur final.
+
+\section{Problèmes étudiés}\label{probluxe8mes-uxe9tudiuxe9s}
+
+\subsection{Comparaison des implémentations existantes des chaînes de
+caractères}\label{intro_structs}
+
+De l'ensemble des langages de programmation modernes, tous
+proposent au moins une implémentation des chaînes de caractères.
+Une majorité d'entre eux proposent une structure de données unique pour leurs
+chaînes de caractères, d'autres proposent plusieurs façons de les
+représenter.
+Certains se basent sur des chaînes de caractères immutables,
+d'autres en revanche proposent des chaînes mutables pour diverses raisons explorées
+dans ce document.
+En termes de codage également, des différences substantielles
+existent dans la façon de gérer les chaînes en interne.
+
+Dans ce document, nous comparons ces implémentations, tant au niveau de
+l'utilisabilité que de la performance: identifier leurs forces,
+leurs faiblesses, ainsi que les moyens proposés pour les mitiger.
+
+\subsection{Chaînes de caractères et codages}
+
+La capacité d'une bibliothèque de gestion des chaînes de caractères à traiter
+du texte multilingue est un avantage important et passe par deux facettes:
+codage et opérations.
+Les différentes formes de codage proposent des solutions au problème
+de la représentation en mémoire des chaînes de caractères dans des langues
+différentes, chacun possédant ses forces et ses faiblesses.
+Cependant, certains codages sont peu utilisés comme repré-sentation interne
+du fait de leur inefficacité sur certaines opérations (accès indexé par exemple) dans
+les chaînes de caractères, et ce, en dépit des avantages qu'ils proposent.
+C'est le cas par exemple d'UTF-8, bien que ce dernier soit de plus en plus utilisé dans
+les langages de programmation modernes.
+
+Nit ne supportait pas de codage multilingue au début de ce travail.
+Nous avons choisi UTF-8 comme représentation interne parmi
+les principales solutions de codage disponibles aujourd'hui.
+Ce document vise à justifier ce choix.
+Nous prouvons également que la représentation en cordes peut
+présenter une solution acceptable aux problèmes qu'un codage à longueur variable soulève.
+Ces derniers sont détaillés dans la section \ref{unicode_troubles} de ce document.
+
+\subsection{Performance et passage à l'échelle des chaînes de caractères}\label{intro_scaling}
+
+Les chaînes de caractères à représentation
+plate ont pour désavantage majeur d'être peu résistantes au passage
+à l'échelle, et les traitements effectués sur elles peuvent dégénérer.
+Le problème est plus important lorsque l'on parle de chaînes immutables,
+chaque instance de chaîne possédant son propre tableau de caractères.
+Les opérations de mutation (concaténation, modification, etc.) entraînent
+une ré-allocation et une copie, très coûteuse lorsque sur une grande
+chaîne, le coût de ces opérations augmentant linéairement.
+
+Une structure alternative, les cordes peuvent limiter le problème soulevé ici en permettant, dans le cas
+de modifications localisées sur des chaînes plates ou de concaténation,
+de remplacer l'opération d'allocation et copie par la création d'un nouvel objet.
+Cependant, la question se pose de leur impact sur les autres opérations,
+notamment sur des chaînes courtes, à savoir est-ce que les cordes sont
+toujours la bonne représentation pour ces cas là, ou bien la représentation
+plate est-elle à préférer ?
+
+Une solution pour limiter les problèmes des cordes et des chaînes plates
+est de passer d'une représentation à l'autre passé une certaine taille.
+Cette étude vise à déterminer à partir de quel seuil la
+conversion vers des cordes devient bénéfique, et traite de la façon
+dont la conversion s'effectue ainsi que des éventuels problèmes
+pouvant provenir de ce comportement.
+
+\subsection{Contributions}
+
+Pendant cette étude, nous avons implémenté un nouveau modèle de représentation
+des chaînes de caractères dans le langage Nit.
+Cette contribution représente l'originalité principale résultant de cette étude.
+
+Nous avons également ajouté le support d'Unicode au langage, en supportant les
+manipulations sur des séquences codées en UTF-8.
+
+Nous souhaitons attirer l'attention du lecteur sur le peu d'études scientifiques
+disponibles concernant les implémentations des chaînes de caractères dans les
+différents langages.
+En effet, le champ de recherche au niveau académique est peu fourni en termes de
+publications sur les implémentations dans les langages de programmation.
+Une des contributions de cette étude est d'avoir étudié les documents spécificatifs des langages,
+ainsi que le code source des implémentations disponibles pour étudier leurs forces et faiblesses.
+
+Finalement, une grande partie du travail s'est focalisé sur des micro-optimisations
+afin d'assurer un niveau de performances acceptable pour l'ensemble des manipulations
+sur les chaînes de caractères en Nit.
+
+\section{Organisation du document}
+
+Le chapitre \ref{state_art_chap} détaille l'état de l'art des solutions existantes.
+Nous y présentons les structures de données pour représenter les chaînes de caractères.
+Nous étudions également les différents codages, et présentons leurs avantages et inconvénients.
+
+Dans le chapitre~\ref{solution_chap}, nous poursuivons en présentant une solution aux problèmes de
+cas dégénératifs que nous exposons en section~\ref{intro_scaling}.
+Cette solution est entièrement implémentée en Nit, et est aujourd'hui utilisée
+dans la bibliothèque standard du langage.
+Ce chapitre fera également un état des lieux des contributions reliées à ce mémoire dans
+la bibliothèque standard du langage Nit.
+
+Le chapitre \ref{perf_chap}, mesure des performances, suivra la présentation de notre solution, des
+contributions et problèmes rencontrés.
+Il sert de validation en termes de performances, aussi bien dans des cadres de
+micro-benchmarks, fait pour tester la robustesse des approches dans des cas dégénératifs,
+que dans de vrais programmes Nit.
+
+Finalement, nous concluons ce mémoire en résumant les avantages et inconvénients
+de notre solution, et en mettant en perspective le travail restant à effectuer.
+
+\end{introduction}

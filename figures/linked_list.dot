@@ -1,0 +1,15 @@
+digraph G{
+
+	graph [rankdir=LR];
+	node [shape = record, fontname = "Courier"];
+	edge [tailclip=false];
+
+	node1 [ label = "{H | <next>}"];
+	node2 [ label = "{e | <next>}"];
+	node3 [ label = "{l | <next>}"];
+	node4 [ label = "{l | }"];
+
+	node1:next:c -> node2 [arrowtail=dot, dir=both];
+	node2:next:c -> node3 [arrowtail=dot, dir=both];
+	node3:next:c -> node4 [arrowtail=dot, dir=both];
+}

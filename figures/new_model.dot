@@ -1,0 +1,96 @@
+digraph G {
+	fontname = "Bitstream Vera Sans"
+				fontsize = 8
+				node [
+					fontname = "Bitstream Vera Sans"
+					fontsize = 8
+					shape = "record"
+				]
+
+				edge [
+					fontname = "Bitstream Vera Sans"
+					fontsize = 8
+				]
+
+CharSequenceRead [
+ label = "{SequenceRead[Char]|}"
+];
+
+ByteSequenceRead [
+ label = "{SequenceRead[Byte]|}"
+];
+
+NativeString [
+ label = "{NativeString|}"
+];
+
+FlatBuffer [
+ label = "{FlatBuffer|}"
+];
+
+FlatString [
+ label = "{FlatString|}"
+];
+
+FlatText [
+ label = "{FlatText|}"
+];
+
+Concat [
+ label = "{Concat|}"
+];
+
+RopeBuffer [
+ label = "{RopeBuffer|}"
+];
+
+Rope [
+ label = "{Rope|}"
+];
+
+String [
+ label = "{String|}"
+];
+
+Buffer [
+ label = "{Buffer|}"
+];
+
+CharView [
+ label = "{CharView|}"
+];
+
+ByteView [
+ label = "{ByteView|}"
+];
+
+Text [
+ label = "{Text|}"
+];
+
+Object [
+ label = "{Object|}"
+];
+
+String -> Concat [dir=back arrowtail=empty];
+Buffer -> RopeBuffer [dir=back arrowtail=empty];
+Rope -> RopeBuffer [dir=back arrowtail=empty];
+Rope -> Concat [dir=back arrowtail=empty];
+Text -> Rope [dir=back arrowtail=empty];
+Buffer -> FlatBuffer [dir=back arrowtail=empty];
+FlatText -> FlatBuffer [dir=back arrowtail=empty];
+String -> FlatString [dir=back arrowtail=empty];
+FlatText -> FlatString [dir=back arrowtail=empty];
+Text -> FlatText [dir=back arrowtail=empty];
+FlatText -> NativeString [dir=back arrowtail=diamond];
+Text -> ByteView [dir=back arrowtail=diamond];
+Text -> CharView [dir=back arrowtail=diamond];
+Text -> Buffer [dir=back arrowtail=empty];
+Text -> String [dir=back arrowtail=empty];
+CharSequenceRead -> CharView [dir=back arrowtail=empty];
+ByteSequenceRead -> ByteView [dir=back arrowtail=empty];
+Object -> CharSequenceRead [dir=back arrowtail=empty];
+Object -> ByteSequenceRead [dir=back arrowtail=empty];
+Object -> NativeString [dir=back arrowtail=empty];
+Object -> Text [dir=back arrowtail=empty];
+}

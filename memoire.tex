@@ -1,0 +1,109 @@
+\documentclass[11pt,twoside]{memoireuqam1.3}
+\usepackage{amssymb,graphicx,stackengine,xcolor}
+\def\ucr{\scalebox{1}{\stackinset{c}{}{c}{-.2pt}{%
+			  \textcolor{white}{\sffamily\bfseries\small ?}}{%
+				    \rotatebox{45}{$\blacksquare$}}}}
+\uqammemoire   %% Pour la page titre d'un mémoire
+
+\usepackage{graphicx}% Pour les figures
+%\usepackage[T1]{fontenc} % pour windows surtout, pas bon
+%\usepackage[utf8x]{inputenc} % Pour utiliser les caractères accentués sous Unix
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage[french]{babel}
+\usepackage{xltxtra}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{url}
+\usepackage{tabularx}
+%\usepackage[usenames]{color}
+\usepackage{fnamed}
+%\usepackage{lmodern}
+%\usepackage[cyr]{aeguill} % old school, dépassé
+%\usepackage[font=small]{caption}
+\usepackage{afterpage}
+
+\newcommand\blankpage{%
+	\null
+	\thispagestyle{empty}%
+	\addtocounter{page}{-1}%
+\newpage}
+
+%\input macros  % Pour les définitions personnelles
+
+\floatstyle{plain}
+\restylefloat{figure}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%
+% Pour la page titre
+%%%%%%%%%%%%%%%%%%%%
+
+% Le titre ne supporte pas les accent simples
+\title{Des cha\^ines de caract\`eres efficaces et r\'esistantes au passage \`a l'\'echelle, une proposition de mod\'elisation pour les langages de programmation \`a objets}
+\author{Lucas Bajolet}
+\degreemonth{Juin}
+\degreeyear{2016}
+\uqammemoire
+% ou
+% \uqamthese   %% Pour la page titre d'une thèse
+% ou
+% \uqamrapport %% Pour la page titre d'un rapport
+
+% Le département doit être modifié dans memoireuqam1.3.cls
+
+\thispagestyle{empty}        % La page titre n'est pas numérotée
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%
+% Page préliminaires
+%%%%%%%%%%%%%%%%%%%%
+%\renewcommand \bibname{R\'EF\'ERENCES}% FACULTATIF
+%Enlever le commentaire, si vous voulez qu'apparaisse le titre RÉFÉRENCES
+% plutôt que BIBLIOGRAPHIE
+
+\renewcommand \listfigurename{LISTE DES FIGURES}
+\renewcommand \appendixname{APPENDICE}
+\renewcommand \figurename{Figure}
+\renewcommand \tablename{Tableau}
+
+\pagenumbering{roman} % numérotation des pages en chiffres romains
+\addtocounter{page}{1} % Pour que les remerciements commencent à la page ii
+\cleardoublepage
+\thispagestyle{empty} % pas numérotée
+\include{textes/tex/remerciements}
+\tableofcontents % Pour générer la table des matières
+\listoffigures % Pour générer la liste des figures
+\listoftables % Pour générer la liste des tableaux
+\include{textes/tex/lexique}
+\include{textes/tex/resume}
+% Utilisez l'environnement  abstract pour rédiger votre résumé
+
+%%%%%%%%%%%%%%%%%%%%
+% Document principal
+%%%%%%%%%%%%%%%%%%%%
+
+\parindent=0ex % Facultatif
+% pour qu'il n'y ait pas  de renfoncement à chaque alinéa
+
+\afterpage{\blankpage}
+\pagenumbering{arabic} % numérotation des pages en chiffres romains
+% Utilisez l'environnement  introduction pour rédiger votre introduction
+\include{textes/tex/intro}
+
+\include{textes/tex/state_art}
+\include{textes/tex/solution}
+\include{textes/tex/perf}
+
+% Utilisez l'environnement  conclusion pour rédiger votre conclusion
+\include{textes/tex/conclusion}
+
+%%%%%%%%%%%%%%%%%%%%
+% Page liminaires
+%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{theseuqam2} % non compatible avec le package natbib
+\bibliography{bibliography}
+
+\end{document}
